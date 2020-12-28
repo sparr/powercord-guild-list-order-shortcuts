@@ -205,6 +205,18 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
                     })
                   })
                 })
+                ,
+                React.createElement(MenuItem, {
+                  id: 'guild-list-order-shortcuts-sort-servers-randomly',
+                  key: 'guild-list-order-shortcuts-sort-servers-randomly',
+                  label: Messages.RANDOMLY,
+                  action: () => this._reorderGuilds((guildFolders) => {
+                    for (let i = guildFolders.length - 1; i > 0; i--) {
+                      const j = Math.floor(Math.random() * (i + 1));
+                      [guildFolders[i], guildFolders[j]] = [guildFolders[j], guildFolders[i]];
+                    }
+                  })
+                })
               ]
             })
           ]
