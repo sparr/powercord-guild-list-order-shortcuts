@@ -6,5 +6,6 @@
   "SORT_GUILDS": "Sort servers",
   "ALPHABETICALLY": "Alphabetically",
   "BY_JOIN_DATE": "By join date",
-  "BY_CREATION_DATE": "By creation date"
+  "BY_CREATION_DATE": "By creation date",
+  "RANDOMIZE": "Randomize servers"
 }
