@@ -1,3 +1,9 @@
 {
-  "MOVE_TO_TOP": "Move to top"
+  "MOVE_GUILD": "Move server",
+  "TO_TOP": "To top",
+  "TO_BOTTOM": "To bottom",
+  "TO_FOLDER": "To folder",
+  "SORT_GUILDS": "Sort servers",
+  "ALPHABETICALLY": "Alphabetically",
+  "BY_JOIN_DATE": "By join date"
 }

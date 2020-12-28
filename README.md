@@ -1,12 +1,12 @@
 # Guild List Order Shortcuts
 
-Adds context menu entries to re-order the guild list
+Adds context menu entries to re-order the server list (which Discord calls "Guilds" internally)
 
 ## Features
 
-Currently the only implemented feature is "Move to top", which does exactly what it says on the tin.
+Move individual servers to the top or bottom of the list, or into a target folder by name.
 
-More to come!
+Sort the entire server list alphabetically or by join date, with folders unsorted at the bottom for now.
 
 ## Installation
 
