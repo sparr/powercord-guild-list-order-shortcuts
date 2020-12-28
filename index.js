@@ -195,6 +195,6 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
   }
 
   pluginWillUnload() {
-    uninject('guild-list-order-shortcuts-move-to-top-context-menu');
+    uninject('guild-list-order-shortcuts-context-menu');
   }
 }
