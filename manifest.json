@@ -1,0 +1,7 @@
+{
+  "name": "Guild List Order Shortcuts",
+  "version": "0.0.1",
+  "description": "Adds context menu entries to re-order the guild list",
+  "author": "Sparr",
+  "license": "OSL-3.0"
+}
