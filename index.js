@@ -19,6 +19,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
     const { MenuGroup, MenuItem } = await getModule(['MenuItem']);
     const GuildContextMenu = await getModule(m => m.default && m.default.displayName === 'GuildContextMenu');
     const { getGuild } = await getModule([ 'getGuild' ], false);
+    const { extractTimestamp } = await getModule([ 'extractTimestamp' ], false);
 
     inject('guild-list-order-shortcuts-context-menu', GuildContextMenu, 'default', ([{ guild }], res) => {
       const { guildFolders } = getModule([ 'guildFolders' ], false);
@@ -177,6 +178,27 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
                       }
                       const aDate = getGuild(a.guildIds[0])?.joinedAt;
                       const bDate = getGuild(b.guildIds[0])?.joinedAt;
+                      if (aDate < bDate) return -1;
+                      if (aDate > bDate) return 1;
+                      return 0;
+                    })
+                  })
+                })
+                ,
+                React.createElement(MenuItem, {
+                  id: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
+                  key: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
+                  label: Messages.BY_CREATION_DATE,
+                  action: () => this._reorderGuilds((guildFolders) => {
+                    guildFolders.sort((a,b) => {
+                      if (a.guildIds.length > 1) {
+                        if (b.guildIds.length > 1) {
+                          return 0;
+                        }
+                        return 1;
+                      }
+                      const aDate = extractTimestamp(a.guildIds[0]);
+                      const bDate = extractTimestamp(b.guildIds[0]);
                       if (aDate < bDate) return -1;
                       if (aDate > bDate) return 1;
                       return 0;
