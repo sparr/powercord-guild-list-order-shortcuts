@@ -88,12 +88,21 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
                   key: 'guild-list-order-shortcuts-move-guild-to-folder',
                   label: Messages.TO_FOLDER,
                   children: guildFolders.map((targetFolder, targetFolderIndex) => {
-                    if (!('folderName' in targetFolder)) return null;
-                    const dashName = targetFolder.folderName.replace(/[^0-9a-z]/gi, '-');
+                    // filter out fake folders
+                    if (!('folderId' in targetFolder)) return null;
+                    var folderLabel;
+                    if ('folderName' in targetFolder) {
+                      folderLabel = targetFolder.folderName;
+                    } else {
+                      //TODO replicate the client behavior of using "Server Name 1, Server Name 2, ..." as the name for no-name folders
+                      folderLabel = targetFolder.folderId.toString();
+                    }
+                    const dashName = folderLabel.replace(/[^0-9a-z]/gi, '-');
+                    // build the menu item for this target folder
                     return React.createElement(MenuItem, {
                       id: 'guild-list-order-shortcuts-move-guild-to-folder-' + dashName,
-                      key: 'guild-list-order-shortcuts-move-guild-to-bottom-' + dashName,
-                      label: targetFolder.folderName,
+                      key: 'guild-list-order-shortcuts-move-guild-to-folder-' + dashName,
+                      label: folderLabel,
                       action: () => this._reorderGuilds((guildFolders) => {
                         findGuild:
                         // loop over all the folders, including fake one-guild folders
@@ -132,17 +141,21 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
                   label: Messages.ALPHABETICALLY,
                   action: () => this._reorderGuilds((guildFolders) => {
                     guildFolders.sort((a,b) => {
-                      if ('folderName' in a) {
-                        if ('folderName' in b) {
+                      // real folders have a folderId and get sorted to the bottom
+                      if ('folderId' in a) {
+                        if ('folderId' in b) {
                           return 0;
                         }
                         return 1;
                       }
-                      if ('folderName' in b) {
+                      if ('folderId' in b) {
                         return -1;
                       }
-                      const aName = getGuild(a.guildIds[0]).name.toUpperCase();
-                      const bName = getGuild(b.guildIds[0]).name.toUpperCase();
+                      // ?. because users can somehow end up with servers in their guildFolders list but not actually be in them?
+                      // toUpperCase to make the sort case insensitive
+                      const aName = getGuild(a.guildIds[0])?.name.toUpperCase();
+                      const bName = getGuild(b.guildIds[0])?.name.toUpperCase();
+                      // normal alphabetic sorting
                       if (aName < bName) return -1;
                       if (aName > bName) return 1;
                       return 0;
@@ -162,8 +175,8 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
                         }
                         return 1;
                       }
-                      const aDate = getGuild(a.guildIds[0]).joinedAt;
-                      const bDate = getGuild(b.guildIds[0]).joinedAt;
+                      const aDate = getGuild(a.guildIds[0])?.joinedAt;
+                      const bDate = getGuild(b.guildIds[0])?.joinedAt;
                       if (aDate < bDate) return -1;
                       if (aDate > bDate) return 1;
                       return 0;
