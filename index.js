@@ -4,6 +4,7 @@
  * Licensed under the Open Software License version 3.0
  */
 
+
 const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { React, getModule, i18n: { Messages } } = require('powercord/webpack');
@@ -12,116 +13,144 @@ const i18n = require('./i18n');
 module.exports = class GuildListOrderShortcuts extends Plugin {
   async startPlugin() {
     powercord.api.i18n.loadAllStrings(i18n);
-    this._injectContextMenu();
-  }
+    this.lazyPatchContextMenu('GuildContextMenu', async (GuildContextMenu) => {
+      console.log('Two');
+      const { MenuGroup, MenuItem } = await getModule(['MenuItem']);
+      const { getGuild } = await getModule([ 'getGuild' ], false);
+      const { extractTimestamp } = await getModule([ 'extractTimestamp' ], false);
 
-  async _injectContextMenu() {
-    const { MenuGroup, MenuItem } = await getModule(['MenuItem']);
-    const GuildContextMenu = await getModule(m => m.default && m.default.displayName === 'GuildContextMenu');
-    const { getGuild } = await getModule([ 'getGuild' ], false);
-    const { extractTimestamp } = await getModule([ 'extractTimestamp' ], false);
-
-    inject('guild-list-order-shortcuts-context-menu', GuildContextMenu, 'default', ([{ guild }], res) => {
-      const { guildFolders } = getModule([ 'guildFolders' ], false);
-      res.props.children.push(
-        React.createElement(MenuGroup, {}, [
-            React.createElement(MenuItem, {
-              id: 'guild-list-order-shortcuts-move-guild',
-              key: 'guild-list-order-shortcuts-move-guild',
-              label: Messages.MOVE_GUILD,
-              children: [
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-move-guild-to-top',
-                  key: 'guild-list-order-shortcuts-move-guild-to-top',
-                  label: Messages.TO_TOP,
-                  action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders.unshift({guildIds: [guildId]}))
-                })
-                ,
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-move-guild-to-bottom',
-                  key: 'guild-list-order-shortcuts-move-guild-to-bottom',
-                  label: Messages.TO_BOTTOM,
-                  action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders.push({guildIds: [guildId]}))
-                })
-                ,
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-move-guild-to-folder',
-                  key: 'guild-list-order-shortcuts-move-guild-to-folder',
-                  label: Messages.TO_FOLDER,
-                  children: guildFolders.map((targetFolder, targetFolderIndex) => {
-                    // filter out fake folders
-                    if (!('folderId' in targetFolder)) return null;
-                    var folderLabel;
-                    if ('folderName' in targetFolder) {
-                      folderLabel = targetFolder.folderName;
-                    } else {
-                      folderLabel = getGuild(targetFolder.guildIds[0])?.name + ', ...';
-                    }
-                    // build the menu item for this target folder
-                    return React.createElement(MenuItem, {
-                      id: 'guild-list-order-shortcuts-move-guild-to-folder-' + targetFolder.folderId,
-                      key: 'guild-list-order-shortcuts-move-guild-to-folder-' + targetFolder.folderId,
-                      label: folderLabel,
-                      action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders[targetFolderIndex].guildIds.push(guild.id))
-                    })
-                  }).filter(e => e)
-                })
-              ]
-            })
-            ,
-            React.createElement(MenuItem, {
-              id: 'guild-list-order-shortcuts-sort-servers',
-              key: 'guild-list-order-shortcuts-sort-servers',
-              label: Messages.SORT_GUILDS,
-              children: [
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-sort-servers-alphabetically',
-                  key: 'guild-list-order-shortcuts-sort-servers-alphabetically',
-                  label: Messages.ALPHABETICALLY,
-                  // guild name, convert non-letters/numbers to spaces, trim leading/trailing spaces, case insensitive
-                  action: () => this._sortGuildFolders(guildId => getGuild(guildId)?.name.replace(/[^\p{L}\p{N}]/gu, ' ').trim().toUpperCase())
-                })
-                ,
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-sort-servers-by-join-date',
-                  key: 'guild-list-order-shortcuts-sort-servers-by-join-date',
-                  label: Messages.BY_JOIN_DATE,
-                  action: () => this._sortGuildFolders(guildId => getGuild(guildId)?.joinedAt)
-                })
-                ,
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
-                  key: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
-                  label: Messages.BY_CREATION_DATE,
-                  action: () => this._sortGuildFolders(guildId => extractTimestamp(guildId))
-                })
-                ,
-                React.createElement(MenuItem, {
-                  id: 'guild-list-order-shortcuts-sort-servers-randomly',
-                  key: 'guild-list-order-shortcuts-sort-servers-randomly',
-                  label: Messages.RANDOMLY,
-                  action: () => this._reorderGuildFolders((guildFolders) => {
-                    // Durstenfeld shuffle from https://stackoverflow.com/a/12646864/13675
-                    for (let i = guildFolders.length - 1; i > 0; i--) {
-                      const j = Math.floor(Math.random() * (i + 1));
-                      [guildFolders[i], guildFolders[j]] = [guildFolders[j], guildFolders[i]];
-                    }
+      inject('guild-list-order-shortcuts-context-menu', GuildContextMenu, 'default', ([{ guild }], res) => {
+        console.log("injecting guild-list-order-shortcuts-context-menu")
+        const { guildFolders } = getModule([ 'guildFolders' ], false);
+        res.props.children.push(
+          React.createElement(MenuGroup, {}, [
+              React.createElement(MenuItem, {
+                id: 'guild-list-order-shortcuts-move-guild',
+                key: 'guild-list-order-shortcuts-move-guild',
+                label: Messages.MOVE_GUILD,
+                children: [
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-move-guild-to-top',
+                    key: 'guild-list-order-shortcuts-move-guild-to-top',
+                    label: Messages.TO_TOP,
+                    action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders.unshift({guildIds: [guildId]}))
                   })
-                })
-              ]
-            })
-          ]
-        )
-      );
+                  ,
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-move-guild-to-bottom',
+                    key: 'guild-list-order-shortcuts-move-guild-to-bottom',
+                    label: Messages.TO_BOTTOM,
+                    action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders.push({guildIds: [guildId]}))
+                  })
+                  ,
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-move-guild-to-folder',
+                    key: 'guild-list-order-shortcuts-move-guild-to-folder',
+                    label: Messages.TO_FOLDER,
+                    children: guildFolders.map((targetFolder, targetFolderIndex) => {
+                      // filter out fake folders
+                      if (!('folderId' in targetFolder)) return null;
+                      var folderLabel;
+                      if ('folderName' in targetFolder) {
+                        folderLabel = targetFolder.folderName;
+                      } else {
+                        folderLabel = getGuild(targetFolder.guildIds[0])?.name + ', ...';
+                      }
+                      // build the menu item for this target folder
+                      return React.createElement(MenuItem, {
+                        id: 'guild-list-order-shortcuts-move-guild-to-folder-' + targetFolder.folderId,
+                        key: 'guild-list-order-shortcuts-move-guild-to-folder-' + targetFolder.folderId,
+                        label: folderLabel,
+                        action: () => this._moveSingleGuildById(guild.id, (guildFolders, guildId) => guildFolders[targetFolderIndex].guildIds.push(guild.id))
+                      })
+                    }).filter(e => e)
+                  })
+                ]
+              })
+              ,
+              React.createElement(MenuItem, {
+                id: 'guild-list-order-shortcuts-sort-servers',
+                key: 'guild-list-order-shortcuts-sort-servers',
+                label: Messages.SORT_GUILDS,
+                children: [
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-sort-servers-alphabetically',
+                    key: 'guild-list-order-shortcuts-sort-servers-alphabetically',
+                    label: Messages.ALPHABETICALLY,
+                    // guild name, convert non-letters/numbers to spaces, trim leading/trailing spaces, case insensitive
+                    action: () => this._sortGuildFolders(guildId => getGuild(guildId)?.name.replace(/[^\p{L}\p{N}]/gu, ' ').trim().toUpperCase())
+                  })
+                  ,
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-sort-servers-by-join-date',
+                    key: 'guild-list-order-shortcuts-sort-servers-by-join-date',
+                    label: Messages.BY_JOIN_DATE,
+                    action: () => this._sortGuildFolders(guildId => getGuild(guildId)?.joinedAt)
+                  })
+                  ,
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
+                    key: 'guild-list-order-shortcuts-sort-servers-by-creation-date',
+                    label: Messages.BY_CREATION_DATE,
+                    action: () => this._sortGuildFolders(guildId => extractTimestamp(guildId))
+                  })
+                  ,
+                  React.createElement(MenuItem, {
+                    id: 'guild-list-order-shortcuts-sort-servers-randomly',
+                    key: 'guild-list-order-shortcuts-sort-servers-randomly',
+                    label: Messages.RANDOMLY,
+                    action: () => this._reorderGuildFolders((guildFolders) => {
+                      // Durstenfeld shuffle from https://stackoverflow.com/a/12646864/13675
+                      for (let i = guildFolders.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [guildFolders[i], guildFolders[j]] = [guildFolders[j], guildFolders[i]];
+                      }
+                    })
+                  })
+                ]
+              })
+            ]
+          )
+        );
 
-      return res;
+        return res;
+      });
+      GuildContextMenu.default.displayName = 'GuildContextMenu';
     });
-
-    // I don't know why this is here, it seems redundant after the filter condition above for getModule.
-    // Copied verbatim from the guild-profile plugin until I learn why it's there.
-    GuildContextMenu.default.displayName = 'GuildContextMenu';
   }
 
+  // Credit to SammCheese
+  // "due to the recent update, discord has made many components only exportable once it's loaded
+  //  otherwise, the components doesn't exist
+  //  SammCheese's lazy patching is just called lazy because discord is also lazy
+  //  it just finds a components that will forcefully load the component 
+  //  then it will patch that component once it's loaded" - @King Fish#0723
+  async lazyPatchContextMenu(displayName, patch) {
+    const filter = m => m.default && m.default.displayName === displayName
+    const m = getModule(filter, false)
+    if (m) patch(m)
+    else {
+      const module = getModule([ 'openContextMenuLazy' ], false)
+      inject('rm-lazy-contextmenu', module, 'openContextMenuLazy', args => {
+        const lazyRender = args[1]
+        args[1] = async () => {
+          const render = await lazyRender(args[0])
+
+          return (config) => {
+            const menu = render(config)
+            if (menu?.type?.displayName === displayName && patch) {
+              uninject('rm-lazy-contextmenu')
+              patch(getModule(filter, false))
+              patch = false
+            }
+          return menu
+          }
+        }
+        return args
+      }, true)
+    }
+  }
+  
   /**
    * Reorder the Guild list using a callback
    * @param {callback} guildFoldersReorderFunc - Function that reorders a guildFolders array in place
