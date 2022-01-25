@@ -13,11 +13,12 @@ const i18n = require('./i18n');
 module.exports = class GuildListOrderShortcuts extends Plugin {
   async startPlugin() {
     powercord.api.i18n.loadAllStrings(i18n);
+    
     this.lazyPatchContextMenu('GuildContextMenu', async (GuildContextMenu) => {
       console.log('Two');
       const { MenuGroup, MenuItem } = await getModule(['MenuItem']);
-      const { getGuild } = await getModule([ 'getGuild' ], false);
-      const { extractTimestamp } = await getModule([ 'extractTimestamp' ], false);
+      const { getGuild } = await getModule([ 'getGuild' ]);
+      const { extractTimestamp } = await getModule([ 'extractTimestamp' ]);
 
       inject('guild-list-order-shortcuts-context-menu', GuildContextMenu, 'default', ([{ guild }], res) => {
         console.log("injecting guild-list-order-shortcuts-context-menu")
@@ -131,7 +132,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
     if (m) patch(m)
     else {
       const module = getModule([ 'openContextMenuLazy' ], false)
-      inject('rm-lazy-contextmenu', module, 'openContextMenuLazy', args => {
+      inject('guild-list-lazy-contextmenu', module, 'openContextMenuLazy', args => {
         const lazyRender = args[1]
         args[1] = async () => {
           const render = await lazyRender(args[0])
@@ -139,7 +140,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
           return (config) => {
             const menu = render(config)
             if (menu?.type?.displayName === displayName && patch) {
-              uninject('rm-lazy-contextmenu')
+              uninject('guild-list-lazy-contextmenu')
               patch(getModule(filter, false))
               patch = false
             }
