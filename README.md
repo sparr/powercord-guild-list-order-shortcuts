@@ -1,3 +1,5 @@
+# WARNING: This plugin is currently broken and will un-folder all of your servers if you attempt to use it.
+
 # Guild List Order Shortcuts
 
 Adds context menu entries to re-order the server list (which Discord calls "Guilds" internally)
