@@ -20,7 +20,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
       const { extractTimestamp } = await getModule([ 'extractTimestamp' ]);
 
       inject('guild-list-order-shortcuts-context-menu', GuildContextMenu, 'default', ([{ guild }], res) => {
-        const { guildFolders } = getModule([ 'guildFolders' ], false);
+        const { guildFolders } = getModule([ 'getCompatibleGuildFolders' ], false);
         res.props.children.push(
           React.createElement(MenuGroup, {}, [
               React.createElement(MenuItem, {
@@ -155,7 +155,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
    * @param {callback} guildFoldersReorderFunc - Function that reorders a guildFolders array in place
    */  
   _reorderGuildFolders(guildFoldersReorderFunc) {
-    const { guildFolders } = getModule([ 'guildFolders' ], false);
+    const { guildFolders } = getModule([ 'getCompatibleGuildFolders' ], false);
     // copy necessary? encountered mysterious failures to update later after attempt to modify and re-use the existing array
     var newGuildFolders = [ ...guildFolders ]
     // apply the given reordering function
