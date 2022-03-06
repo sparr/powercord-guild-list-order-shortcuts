@@ -15,7 +15,7 @@ module.exports = class GuildListOrderShortcuts extends Plugin {
     powercord.api.i18n.loadAllStrings(i18n);
     
     this.lazyPatchContextMenu('GuildContextMenu', async (GuildContextMenu) => {
-      const { MenuGroup, MenuItem } = await getModule(['MenuItem']);
+      const { MenuGroup, MenuItem } = await getModule(['MenuGroup', 'MenuItem']);
       const { getGuild } = await getModule([ 'getGuild' ]);
       const { extractTimestamp } = await getModule([ 'extractTimestamp' ]);
 
